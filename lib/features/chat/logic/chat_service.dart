@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ChatService {
-
   Future<String> sendMessage(String userMessage) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:5000/get_development_plan'),
+      // استخدام عنوان IP الجديد الخاص بجهازك هنا
+      Uri.parse('http://10.10.54.148:5000/get_development_plan'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

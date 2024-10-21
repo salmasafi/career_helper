@@ -1,9 +1,11 @@
 // ignore_for_file: must_be_immutable
 
-import '../../helper/constants.dart';
+import 'package:ai_app/core/utils/colors.dart';
+
+import '../../../../core/constants.dart';
 import '../../logic/chat_service.dart';
 import '../../logic/message_model.dart';
-import '../../ui/widgets/chat_bubble.dart';
+import '../widgets/chat_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,11 +26,51 @@ class _ChatPageState extends State<ChatPage> {
 
   ChatService _chatService = ChatService();
 
+  Future<void> _sendMessage(String value) async {
+    messagesListTemp.add(
+      Message(
+        message: value,
+        user: 'me',
+        date:
+            '${DateTime.now().day.toString()} ${DateFormat('MMMM yyyy').format(DateTime.now())} ${DateFormat('hh:mm:ss a').format(DateTime.now())}',
+      ),
+    );
+    messagesList = messagesListTemp.reversed.toList();
+
+    setState(() {});
+
+    scrollController.animateTo(
+      0,
+      duration: const Duration(seconds: 1),
+      curve: Curves.linear,
+    );
+    textController.clear();
+
+    String aiResponse = await _chatService.sendMessage(value);
+    messagesListTemp.add(
+      Message(
+        message: aiResponse,
+        user: 'ai',
+        date:
+            '${DateTime.now().day.toString()} ${DateFormat('MMMM yyyy').format(DateTime.now())} ${DateFormat('hh:mm:ss a').format(DateTime.now())}',
+      ),
+    );
+    messagesList = messagesListTemp.reversed.toList();
+
+    setState(() {});
+
+    scrollController.animateTo(
+      0,
+      duration: const Duration(seconds: 1),
+      curve: Curves.linear,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: kPrimaryColor,
+        backgroundColor: AppColors.kPrimaryColor,
         automaticallyImplyLeading: false,
         title: Image.asset(
           kLogo,
@@ -46,11 +88,11 @@ class _ChatPageState extends State<ChatPage> {
                 controller: scrollController,
                 itemBuilder: (context, index) {
                   if (messagesList[index].user == 'me') {
-                    return ChatBubble(
+                    return AnotherChatBubble(
                       message: messagesList[index],
                     );
                   } else {
-                    return AnotherChatBubble(
+                    return ChatBubble(
                       message: messagesList[index],
                     );
                   }
@@ -63,51 +105,29 @@ class _ChatPageState extends State<ChatPage> {
               child: TextField(
                 controller: textController,
                 onSubmitted: (value) async {
-                  if (value != '') {
-                    messagesListTemp.add(
-                      Message(
-                        message: value,
-                        user: 'me',
-                        date:
-                            '${DateTime.now().day.toString()} ${DateFormat('MMMM yyyy').format(DateTime.now())} ${DateFormat('hh:mm:ss a').format(DateTime.now())}',
-                      ),
-                    );
-                    messagesList = messagesListTemp.reversed.toList();
-
-                    String aiResponse = await _chatService.sendMessage(value);
-                    messagesListTemp.add(
-                      Message(
-                        message: aiResponse,
-                        user: 'ai',
-                        date:
-                            '${DateTime.now().day.toString()} ${DateFormat('MMMM yyyy').format(DateTime.now())} ${DateFormat('hh:mm:ss a').format(DateTime.now())}',
-                      ),
-                    );
-                    messagesList = messagesListTemp.reversed.toList();
-
-                    setState(() {});
-
-                    scrollController.animateTo(
-                      //scrollController.position.maxScrollExtent,
-                      0,
-                      duration: const Duration(seconds: 1),
-                      curve: Curves.linear,
-                    );
-                    textController.clear();
+                  if (value.isNotEmpty) {
+                    await _sendMessage(value);
                   }
                 },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: kPrimaryColor),
+                    borderSide: const BorderSide(color: AppColors.kPrimaryColor),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: kPrimaryColor),
+                    borderSide: const BorderSide(color: AppColors.kPrimaryColor),
                   ),
                   hintText: 'Send message',
-                  suffixIcon: const Icon(Icons.send),
-                  suffixIconColor: kPrimaryColor,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.send),
+                    color: AppColors.kPrimaryColor,
+                    onPressed: () async {
+                      if (textController.text.isNotEmpty) {
+                        await _sendMessage(textController.text);
+                      }
+                    },
+                  ),
                 ),
               ),
             ),
