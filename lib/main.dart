@@ -9,6 +9,7 @@ void main() async {
   await Firebase.initializeApp();
   runApp(const MainApp());
 }
+// Hi again
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
